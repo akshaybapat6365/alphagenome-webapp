@@ -11,6 +11,7 @@ import { SNPParser } from '@/services/snp-parser'
 import { AlphaGenomeAPI } from '@/services/alphagenome-api'
 import { InputFormat, AlphaGenomeResult } from '@/types'
 import { AlertCircle, CheckCircle2, Loader2, FileText, Dna } from 'lucide-react'
+import { ErrorMonitor } from '@/utils/monitoring'
 
 const SAMPLE_DATA = {
   [InputFormat.VCF]: `##fileformat=VCFv4.2
@@ -40,9 +41,12 @@ export default function Home() {
   const { toast } = useToast()
 
   const handleAnalyze = async () => {
+    const startTime = performance.now()
     setLoading(true)
     setResults([])
     setParseErrors([])
+    
+    ErrorMonitor.logEvent('analyze_started', { formatSelected: format })
 
     try {
       // Parse SNPs
@@ -81,8 +85,15 @@ export default function Home() {
         title: 'Analysis complete',
         description: `Successfully analyzed ${analysisResults.length} SNPs.`
       })
+      
+      const duration = performance.now() - startTime
+      ErrorMonitor.logPerformance('analysis_complete', duration)
+      ErrorMonitor.logEvent('analyze_success', { 
+        snpCount: analysisResults.length,
+        duration 
+      })
     } catch (error) {
-      console.error('Analysis error:', error)
+      ErrorMonitor.logError(error as Error, { format, inputLength: input.length })
       toast({
         title: 'Analysis failed',
         description: error instanceof Error ? error.message : 'An unexpected error occurred',
