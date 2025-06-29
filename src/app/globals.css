@@ -1,127 +1,59 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-  :root {
-    --background-start-rgb: 15, 23, 42; /* Slate 900 */
-    --background-end-rgb: 0, 0, 0;
-    --foreground-rgb: 224, 231, 255; /* Slate 200 */
-    
-    --primary-rgb: 56, 189, 248; /* Sky 400 */
-    --secondary-rgb: 192, 132, 252; /* Purple 400 */
-
-    --card-background-rgb: 30, 41, 59; /* Slate 800 */
-    --card-border-rgb: 51, 65, 85; /* Slate 700 */
-    
-    --radius: 0.75rem;
-  }
-
   body {
-    color: rgb(var(--foreground-rgb));
-    background: linear-gradient(
-        to bottom right,
-        rgb(var(--background-start-rgb)),
-        rgb(var(--background-end-rgb))
-      );
+    @apply bg-black text-gray-100;
   }
 }
 
 @layer utilities {
-  /* Animated Background */
-  .celestial-background {
+  .soft-shader {
+    background: radial-gradient(ellipse at 50% 50%, rgba(0, 128, 255, 0.1) 0%, rgba(0, 0, 0, 0) 70%);
     position: fixed;
+    top: 0;
+    left: 0;
     width: 100vw;
     height: 100vh;
-    top: 0;
-    left: 0;
-    z-index: -10;
-    background: linear-gradient(
-      -45deg,
-      #0f172a, /* Slate 900 */
-      #0c0a09, /* Stone 950 */
-      #1e1b4b, /* Indigo 950 */
-      #4c0519  /* Rose 950 */
-    );
-    background-size: 400% 400%;
-    animation: gradient-bg 25s ease infinite;
+    z-index: -1;
+    pointer-events: none;
   }
 
-  @keyframes gradient-bg {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-  }
-
-  /* Aurora Card Effect */
-  .aurora-card {
-    background-color: rgba(var(--card-background-rgb), 0.6);
-    border: 1px solid rgba(var(--card-border-rgb), 0.5);
+  .glassmorphism {
+    background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    position: relative;
-    overflow: hidden;
-    border-radius: var(--radius);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
   }
 
-  .aurora-card:before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    border-radius: var(--radius);
-    padding: 1px;
-    background: linear-gradient(135deg, rgba(var(--primary-rgb), 0.4), rgba(var(--secondary-rgb), 0.4));
-    -webkit-mask: 
-      linear-gradient(#fff 0 0) content-box, 
-      linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    opacity: 0;
-    transition: opacity 0.4s ease;
+  .edge-hue {
+    position: relative;
+    z-index: 1;
   }
-  
-  .aurora-card:hover:before {
+
+  .edge-hue::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    background: linear-gradient(45deg, rgba(0, 191, 255, 0.8), rgba(0, 81, 255, 0.8), rgba(0, 191, 255, 0.8));
+    background-size: 200% 200%;
+    border-radius: inherit;
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: -1;
+    filter: blur(5px);
+    animation: gradient-shift 4s ease infinite;
+  }
+
+  .edge-hue:hover::before {
     opacity: 1;
   }
 
-  .aurora-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2), 0 0 40px rgba(var(--primary-rgb), 0.1);
-  }
-
-  /* Gradient Text */
-  .gradient-text {
-    background: linear-gradient(90deg, rgb(var(--primary-rgb)), rgb(var(--secondary-rgb)), rgb(var(--primary-rgb)));
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    animation: text-shine 4s linear infinite;
-  }
-
-  @keyframes text-shine {
-    to {
-      background-position: 200% center;
-    }
-  }
-  
-  /* Entrance Animations */
-  @keyframes fade-in-up {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  .animate-fade-in-up {
-    animation: fade-in-up 0.8s ease-out forwards;
+  @keyframes gradient-shift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
   }
 }

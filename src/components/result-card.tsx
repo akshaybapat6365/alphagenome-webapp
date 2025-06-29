@@ -1,4 +1,3 @@
-
 import { AlphaGenomeResult } from '@/types'
 import { Dna, AlertCircle, TrendingUp, CheckCircle, Info } from 'lucide-react'
 
@@ -9,7 +8,7 @@ interface ResultCardProps {
 
 const getRiskConfig = (pathogenicity: number) => {
   if (pathogenicity > 0.7) {
-    return { label: 'High Risk', color: 'text-red-400', gradient: 'from-red-500/20 to-slate-800/10' };
+    return { label: 'High Risk', color: 'text-blue-400', gradient: 'from-blue-500/20 to-slate-800/10' };
   }
   if (pathogenicity > 0.3) {
     return { label: 'Moderate Risk', color: 'text-yellow-400', gradient: 'from-yellow-500/20 to-slate-800/10' };
@@ -20,7 +19,7 @@ const getRiskConfig = (pathogenicity: number) => {
 export function ResultCard({ result, index }: ResultCardProps) {
   if (result.error) {
     return (
-      <div className="aurora-card p-5 flex items-center gap-4 animate-fade-in-up" style={{ animationDelay: `${index * 100}ms` }}>
+      <div className="glassmorphism rounded-lg p-5 flex items-center gap-4 edge-hue">
         <AlertCircle className="w-8 h-8 text-red-500 flex-shrink-0" />
         <div>
           <p className="font-bold text-lg text-white">{result.rsId}</p>
@@ -37,8 +36,7 @@ export function ResultCard({ result, index }: ResultCardProps) {
 
   return (
     <div 
-      className={`aurora-card p-6 bg-gradient-to-br ${risk.gradient} animate-fade-in-up`}
-      style={{ animationDelay: `${index * 100}ms` }}
+      className={`glassmorphism rounded-lg p-6 bg-gradient-to-br ${risk.gradient} edge-hue`}
     >
       <div className="flex justify-between items-start mb-4">
         <p className="font-bold text-xl text-white">{result.rsId}</p>
@@ -54,7 +52,7 @@ export function ResultCard({ result, index }: ResultCardProps) {
                 <p className={`text-2xl font-bold ${risk.color}`}>{pathogenicityPercent.toFixed(1)}%</p>
             </div>
             <div className="w-full bg-slate-700/50 rounded-full h-2.5">
-                <div className={`bg-gradient-to-r from-sky-400 to-purple-500 h-2.5 rounded-full`} style={{ width: `${pathogenicityPercent}%` }} />
+                <div className={`bg-gradient-to-r from-blue-400 to-blue-600 h-2.5 rounded-full`} style={{ width: `${pathogenicityPercent}%` }} />
             </div>
         </div>
 
