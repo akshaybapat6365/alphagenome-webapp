@@ -1,90 +1,84 @@
-import { AlertCircle, Activity, Dna, TrendingUp, Info } from 'lucide-react'
+
 import { AlphaGenomeResult } from '@/types'
-import { Progress } from '@/components/ui/progress'
+import { Dna, AlertCircle, TrendingUp, CheckCircle, Info } from 'lucide-react'
 
 interface ResultCardProps {
   result: AlphaGenomeResult
   index: number
 }
 
-export function ResultCard({ result, index }: ResultCardProps) {
-  const getRiskLevel = (pathogenicity: number) => {
-    if (pathogenicity > 0.7) return { label: 'High Risk', color: 'text-red-500', bgColor: 'bg-red-500/10', borderColor: 'border-red-500/20' }
-    if (pathogenicity > 0.3) return { label: 'Moderate Risk', color: 'text-yellow-500', bgColor: 'bg-yellow-500/10', borderColor: 'border-yellow-500/20' }
-    return { label: 'Low Risk', color: 'text-green-500', bgColor: 'bg-green-500/10', borderColor: 'border-green-500/20' }
+const getRiskConfig = (pathogenicity: number) => {
+  if (pathogenicity > 0.7) {
+    return { label: 'High Risk', color: 'text-red-400', gradient: 'from-red-500/20 to-slate-800/10' };
   }
+  if (pathogenicity > 0.3) {
+    return { label: 'Moderate Risk', color: 'text-yellow-400', gradient: 'from-yellow-500/20 to-slate-800/10' };
+  }
+  return { label: 'Low Risk', color: 'text-green-400', gradient: 'from-green-500/20 to-slate-800/10' };
+};
 
+export function ResultCard({ result, index }: ResultCardProps) {
   if (result.error) {
     return (
-      <div className="border border-destructive/20 rounded-xl p-6 bg-destructive/5 animate-in fade-in-50 duration-500" style={{ animationDelay: `${index * 100}ms` }}>
-        <div className="flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-destructive mt-0.5" />
-          <div className="flex-1">
-            <p className="font-semibold">{result.rsId}</p>
-            <p className="text-sm text-muted-foreground mt-1">Error: {result.error}</p>
-          </div>
+      <div className="aurora-card p-5 flex items-center gap-4 animate-fade-in-up" style={{ animationDelay: `${index * 100}ms` }}>
+        <AlertCircle className="w-8 h-8 text-red-500 flex-shrink-0" />
+        <div>
+          <p className="font-bold text-lg text-white">{result.rsId}</p>
+          <p className="text-sm text-slate-400">Error: {result.error}</p>
         </div>
       </div>
     )
   }
 
-  if (!result.predictions) {
-    return null
-  }
+  if (!result.predictions) return null;
 
-  const risk = getRiskLevel(result.predictions.pathogenicity || 0)
-  const pathogenicityPercent = (result.predictions.pathogenicity || 0) * 100
+  const risk = getRiskConfig(result.predictions.pathogenicity || 0);
+  const pathogenicityPercent = (result.predictions.pathogenicity || 0) * 100;
 
   return (
     <div 
-      className={`border ${risk.borderColor} rounded-xl p-6 ${risk.bgColor} hover:scale-[1.02] transition-all duration-300 animate-in fade-in-50 slide-in-from-bottom-5`}
+      className={`aurora-card p-6 bg-gradient-to-br ${risk.gradient} animate-fade-in-up`}
       style={{ animationDelay: `${index * 100}ms` }}
     >
-      <div className="space-y-4">
-        {/* Header */}
-        <div className="flex justify-between items-start">
-          <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-lg ${risk.bgColor}`}>
-              <Dna className={`w-5 h-5 ${risk.color}`} />
-            </div>
-            <div>
-              <p className="font-bold text-lg">{result.rsId}</p>
-              <p className="text-sm text-muted-foreground">
-                Chr{result.chromosome}:{result.position.toLocaleString()} • {result.genotype}
-              </p>
-            </div>
-          </div>
-          <div className={`px-3 py-1 rounded-full text-sm font-medium ${risk.bgColor} ${risk.color}`}>
-            {risk.label}
-          </div>
-        </div>
+      <div className="flex justify-between items-start mb-4">
+        <p className="font-bold text-xl text-white">{result.rsId}</p>
+        <span className={`px-3 py-1 text-xs font-semibold rounded-full ${risk.color} bg-black/20`}>
+          {risk.label}
+        </span>
+      </div>
 
-        {/* Risk Score */}
+      <div className="space-y-5">
         <div className="space-y-2">
-          <div className="flex justify-between items-center">
-            <span className="text-sm font-medium">Pathogenicity Score</span>
-            <span className={`text-lg font-bold ${risk.color}`}>{pathogenicityPercent.toFixed(1)}%</span>
-          </div>
-          <Progress value={pathogenicityPercent} className="h-2" />
+            <div className="flex justify-between items-baseline">
+                <p className="text-sm text-slate-300">Pathogenicity Score</p>
+                <p className={`text-2xl font-bold ${risk.color}`}>{pathogenicityPercent.toFixed(1)}%</p>
+            </div>
+            <div className="w-full bg-slate-700/50 rounded-full h-2.5">
+                <div className={`bg-gradient-to-r from-sky-400 to-purple-500 h-2.5 rounded-full`} style={{ width: `${pathogenicityPercent}%` }} />
+            </div>
         </div>
 
-        {/* Effect Description */}
-        <div className="flex items-start gap-2 pt-2">
-          <Activity className="w-4 h-4 text-muted-foreground mt-0.5" />
-          <div className="flex-1">
-            <p className="text-sm font-medium mb-1">Predicted Effect</p>
-            <p className="text-sm text-muted-foreground">{result.predictions.effect || 'No effect data available'}</p>
-          </div>
+        <div className="flex items-start gap-3 text-sm">
+            <Dna className="w-5 h-5 text-slate-400 mt-0.5 flex-shrink-0" />
+            <p className="text-slate-300">
+                <span className="font-semibold text-white">Genotype:</span> {result.genotype} at Chr{result.chromosome}:{result.position}
+            </p>
         </div>
 
-        {/* Confidence */}
+        <div className="flex items-start gap-3 text-sm">
+            <TrendingUp className="w-5 h-5 text-slate-400 mt-0.5 flex-shrink-0" />
+            <p className="text-slate-300">
+                <span className="font-semibold text-white">Predicted Effect:</span> {result.predictions.effect || 'N/A'}
+            </p>
+        </div>
+
         {result.predictions.confidence !== undefined && (
-          <div className="flex items-center gap-2 pt-2 border-t border-primary/10">
-            <Info className="w-4 h-4 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground">
-              Confidence: {(result.predictions.confidence * 100).toFixed(0)}%
-            </span>
-          </div>
+            <div className="flex items-center gap-3 text-sm pt-3 border-t border-slate-700/50">
+                <Info className="w-5 h-5 text-slate-400 flex-shrink-0" />
+                <p className="text-slate-300">
+                    <span className="font-semibold text-white">Confidence:</span> {(result.predictions.confidence * 100).toFixed(0)}%
+                </p>
+            </div>
         )}
       </div>
     </div>
