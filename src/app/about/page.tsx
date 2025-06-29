@@ -1,19 +1,22 @@
+
 export default function About() {
   return (
-    <div className="min-h-screen py-24 px-4 sm:px-6 lg:px-8">
-      <div className="container mx-auto">
-        <h1 className="text-4xl font-extrabold text-white text-center mb-12">About AlphaGenome</h1>
-        <div className="max-w-4xl mx-auto glassmorphism rounded-lg p-8 edge-hue">
-          <p className="text-lg text-gray-300 mb-6">
-            AlphaGenome stands at the forefront of personalized medicine, leveraging state-of-the-art artificial intelligence to provide profound insights into your genetic data. Our mission is to empower individuals with a deeper understanding of their health, ancestry, and unique genetic traits.
-          </p>
-          <p className="text-lg text-gray-300 mb-6">
-            Our platform analyzes single nucleotide polymorphisms (SNPs) to predict genetic predispositions to various health conditions, identify carrier statuses for inherited diseases, and uncover the intricate details of your genetic makeup. We are committed to providing a secure, user-friendly, and highly accurate genetic analysis service.
-          </p>
-          <p className="text-lg text-gray-300">
-            The team behind AlphaGenome is comprised of leading experts in bioinformatics, artificial intelligence, and genetic research. We believe that by unlocking the power of the genome, we can help people live healthier, more informed lives.
-          </p>
-        </div>
+    <div className="min-h-screen pt-32 pb-20 container-mx">
+      <div className="max-w-3xl mx-auto text-center mb-16">
+        <h1 className="text-5xl font-bold tracking-tighter">About AlphaGenome</h1>
+        <p className="text-lg text-gray-400 mt-4">We are a team of scientists, engineers, and researchers dedicated to making genetic information accessible and actionable.</p>
+      </div>
+
+      <div className="max-w-4xl mx-auto bg-gray-900/50 p-8 rounded-2xl border border-gray-800">
+        <p className="text-lg text-gray-300 mb-6">
+          AlphaGenome was founded on the principle that understanding your own DNA is a fundamental right. We believe that by providing individuals with access to their genetic information, we can empower them to make more informed decisions about their health, lifestyle, and future.
+        </p>
+        <p className="text-lg text-gray-300 mb-6">
+          Our platform uses state-of-the-art artificial intelligence and machine learning algorithms to analyze your genetic data. We are committed to providing the most accurate and up-to-date information possible, and we are constantly working to improve our platform and expand our capabilities.
+        </p>
+        <p className="text-lg text-gray-300">
+          We are also committed to privacy and security. We believe that your genetic data is your own, and we will never share it with third parties without your explicit consent. We use the latest encryption and security technologies to protect your data, and we are constantly working to improve our security measures.
+        </p>
       </div>
     </div>
   );
