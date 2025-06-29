@@ -1,3 +1,5 @@
+
+
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -10,9 +12,9 @@ import { useToast } from '@/components/ui/use-toast'
 import { SNPParser } from '@/services/snp-parser'
 import { AlphaGenomeAPI } from '@/services/alphagenome-api'
 import { InputFormat, AlphaGenomeResult } from '@/types'
-import { AlertCircle, CheckCircle2, Loader2, FileText, Dna, Sun, Moon } from 'lucide-react'
+import { AlertCircle, CheckCircle2, Loader2, FileText, Dna, Sun, Moon, Download, Sparkles } from 'lucide-react'
 import { ErrorMonitor } from '@/utils/monitoring'
-import { ImplementationNotice } from '@/components/implementation-notice'
+import { ResultCard } from '@/components/result-card'
 
 const SAMPLE_DATA = {
   [InputFormat.VCF]: `##fileformat=VCFv4.2
@@ -143,8 +145,8 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-background text-foreground flex flex-col items-center py-8 px-4">
-      <div className="absolute top-4 right-4">
+    <main className="min-h-screen bg-black text-white flex flex-col items-center py-8 px-4 relative overflow-hidden soft-shader">
+      <div className="absolute top-4 right-4 z-10">
         <Button variant="ghost" size="icon" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
           <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
           <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
@@ -152,32 +154,30 @@ export default function Home() {
       </div>
       <div className="container mx-auto max-w-6xl space-y-10">
         <header className="flex flex-col items-center justify-center text-center mb-12 mt-4">
-          <Dna className="w-12 h-12 mb-4 text-primary drop-shadow-lg" />
-          <h1 className="text-6xl font-extrabold soft-gradient-text tracking-tight leading-tight">
+          <Dna className="w-12 h-12 mb-4 text-cyan-400 drop-shadow-lg" />
+          <h1 className="text-6xl font-extrabold tracking-tight leading-tight">
             AlphaGenome
           </h1>
-          <p className="text-lg text-muted-foreground mt-3 max-w-2xl">
+          <p className="text-lg text-gray-400 mt-3 max-w-2xl">
             Advanced AI-powered genetic analysis for personalized insights.
           </p>
         </header>
         
-        <ImplementationNotice />
-        
         <div className="grid gap-10 md:grid-cols-2">
-          <Card className="bg-card/60 backdrop-blur-md shadow-xl border border-primary/20 edge-hue p-6">
+          <div className="glassmorphism rounded-lg p-6 edge-hue">
             <CardHeader className="pb-6">
-              <CardTitle className="text-3xl font-bold soft-gradient-text mb-2">Input Genetic Data</CardTitle>
-              <CardDescription className="text-muted-foreground text-base">
+              <CardTitle className="text-3xl font-bold text-white mb-2">Input Genetic Data</CardTitle>
+              <CardDescription className="text-gray-400 text-base">
                 Paste your SNP data in VCF, 23andMe, or custom tab-delimited format.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex flex-col sm:flex-row gap-3">
                 <Select value={format} onValueChange={(value) => setFormat(value as InputFormat)}>
-                  <SelectTrigger className="flex-grow h-12 text-base bg-input/30 border-primary/30 focus:ring-2 focus:ring-primary/50">
+                  <SelectTrigger className="flex-grow h-12 text-base bg-gray-800 border-gray-700 focus:ring-2 focus:ring-cyan-500">
                     <SelectValue placeholder="Select format" />
                   </SelectTrigger>
-                  <SelectContent className="bg-card border-primary/30">
+                  <SelectContent className="bg-gray-900 border-gray-700 text-white">
                     <SelectItem value={InputFormat.AUTO_DETECT}>Auto-detect</SelectItem>
                     <SelectItem value={InputFormat.VCF}>VCF Format</SelectItem>
                     <SelectItem value={InputFormat.TWENTY_THREE_AND_ME}>23andMe</SelectItem>
@@ -189,7 +189,7 @@ export default function Home() {
                   size="lg"
                   onClick={() => loadSampleData(format)}
                   disabled={format === InputFormat.AUTO_DETECT}
-                  className="h-12 text-base border-primary/30 text-primary hover:bg-primary/10"
+                  className="h-12 text-base border-gray-700 text-white hover:bg-gray-800"
                 >
                   <FileText className="w-5 h-5 mr-2" />
                   Load Sample
@@ -200,11 +200,11 @@ export default function Home() {
                 placeholder="Paste your genetic data here..."
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                className="min-h-[350px] font-mono text-sm bg-input/30 border-primary/30 focus:ring-2 focus:ring-primary/50 p-4 rounded-lg"
+                className="min-h-[350px] font-mono text-sm bg-gray-800 border-gray-700 focus:ring-2 focus:ring-cyan-500 p-4 rounded-lg"
               />
 
               {parseErrors.length > 0 && (
-                <Alert variant="destructive" className="bg-destructive/20 border-destructive/50 text-destructive-foreground">
+                <Alert variant="destructive" className="bg-red-900 border-red-700 text-white">
                   <AlertCircle className="h-5 w-5" />
                   <AlertTitle className="text-lg">Parsing Errors</AlertTitle>
                   <AlertDescription>
@@ -223,112 +223,91 @@ export default function Home() {
               <Button 
                 onClick={handleAnalyze} 
                 disabled={loading || !input.trim()}
-                className="w-full h-14 text-lg font-semibold bg-primary hover:bg-primary/90 transition-all duration-300 transform hover:-translate-y-0.5 shadow-lg hover:shadow-primary/30"
+                className="w-full h-14 text-lg font-semibold bg-cyan-500 hover:bg-cyan-600 transition-all duration-300 transform hover:-translate-y-0.5 shadow-lg hover:shadow-cyan-500/50 relative overflow-hidden group"
               >
                 {loading ? (
                   <>
                     <Loader2 className="mr-3 h-5 w-5 animate-spin" />
-                    Analyzing...
+                    <span className="animate-pulse">Analyzing...</span>
                   </>
                 ) : (
-                  'Analyze SNPs'
+                  <>
+                    <Dna className="mr-2 h-5 w-5" />
+                    Analyze SNPs
+                  </>
                 )}
               </Button>
             </CardContent>
-          </Card>
+          </div>
 
-          <Card className="bg-card/60 backdrop-blur-md shadow-xl border border-primary/20 edge-hue p-6">
+          <div className="glassmorphism rounded-lg p-6 edge-hue">
             <CardHeader className="pb-6">
-              <CardTitle className="text-3xl font-bold soft-gradient-text mb-2">Analysis Results</CardTitle>
-              <CardDescription className="text-muted-foreground text-base">
-                AlphaGenome predictions for your genetic variants.
-              </CardDescription>
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle className="text-3xl font-bold text-white mb-2">Analysis Results</CardTitle>
+                  <CardDescription className="text-gray-400 text-base">
+                    AI-powered predictions for your genetic variants
+                  </CardDescription>
+                </div>
+                {results.length > 0 && (
+                  <Button onClick={exportResults} variant="outline" size="sm" className="gap-2 border-gray-700 text-white hover:bg-gray-800">
+                    <Download className="w-4 h-4" />
+                    Export CSV
+                  </Button>
+                )}
+              </div>
             </CardHeader>
             <CardContent>
               {results.length === 0 ? (
-                <div className="text-center py-20 text-muted-foreground opacity-70">
-                  <Dna className="w-16 h-16 mx-auto mb-6 opacity-20" />
-                  <p className="text-lg">No results yet. Upload and analyze your genetic data to see predictions.</p>
+                <div className="flex flex-col items-center justify-center py-16 text-center">
+                  <Sparkles className="w-10 h-10 text-cyan-400 mb-4" />
+                  <p className="text-gray-400 text-lg font-medium">
+                    Your analysis results will appear here.
+                  </p>
                 </div>
               ) : (
                 <div className="space-y-6">
-                  <div className="flex justify-between items-center pb-4 border-b border-primary/20">
-                    <p className="text-base text-muted-foreground font-medium">
-                      Analyzed <span className="text-primary font-semibold">{results.length}</span> variants
+                  <div className="flex items-center gap-2 pb-3 border-b border-gray-800">
+                    <CheckCircle2 className="w-5 h-5 text-green-500" />
+                    <p className="text-sm font-medium">
+                      Successfully analyzed {results.length} variant{results.length !== 1 ? 's' : ''}
                     </p>
-                    <Button size="lg" variant="outline" onClick={exportResults} className="h-12 text-base border-primary/30 text-primary hover:bg-primary/10">
-                      Export CSV
-                    </Button>
                   </div>
                   
-                  <div className="max-h-[450px] overflow-y-auto space-y-4 pr-2 custom-scrollbar">
+                  <div className="max-h-[500px] overflow-y-auto space-y-4 pr-2">
                     {results.map((result, idx) => (
-                      <div key={idx} className="border border-primary/20 rounded-xl p-4 bg-accent/10 hover:bg-accent/20 transition-all duration-200 shadow-sm hover:shadow-md">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <p className="font-semibold text-lg text-foreground">{result.rsId}</p>
-                            <p className="text-sm text-muted-foreground mt-1">
-                              Chr{result.chromosome}:{result.position} - {result.genotype}
-                            </p>
-                          </div>
-                          {result.error ? (
-                            <div className="text-destructive text-sm flex items-center">
-                              <AlertCircle className="w-5 h-5 mr-1" /> Error
-                            </div>
-                          ) : result.predictions && (
-                            <div className="text-right">
-                              <div className={`text-base font-bold ${
-                                (result.predictions.pathogenicity || 0) > 0.7 
-                                  ? 'text-red-400' 
-                                  : (result.predictions.pathogenicity || 0) > 0.3 
-                                  ? 'text-yellow-400' 
-                                  : 'text-green-400'
-                              }`}>
-                                {result.predictions.pathogenicity !== undefined 
-                                  ? `Risk: ${(result.predictions.pathogenicity * 100).toFixed(0)}%`
-                                  : 'Unknown'}
-                              </div>
-                              <p className="text-sm text-muted-foreground mt-1">
-                                {result.predictions.effect || 'No effect data'}
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                        {result.error && (
-                          <p className="text-sm text-destructive mt-2">{result.error}</p>
-                        )}
-                      </div>
+                      <ResultCard key={idx} result={result} index={idx} />
                     ))}
                   </div>
                 </div>
               )}
             </CardContent>
-          </Card>
+          </div>
         </div>
 
-        <Card className="mt-10 bg-card/60 backdrop-blur-md shadow-xl border border-primary/20 edge-hue p-6">
+        <div className="glassmorphism rounded-lg p-6 mt-10 edge-hue">
           <CardHeader className="pb-6">
-            <CardTitle className="text-3xl font-bold soft-gradient-text mb-2">About AlphaGenome</CardTitle>
+            <CardTitle className="text-3xl font-bold text-white mb-2">About AlphaGenome</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-base text-muted-foreground leading-relaxed">
+            <p className="text-base text-gray-400 leading-relaxed">
               AlphaGenome uses advanced AI to analyze genetic variants and predict their potential effects. 
               This tool supports multiple input formats including VCF, 23andMe, and custom tab-delimited files. 
               Results include pathogenicity predictions, functional effects, and confidence scores.
             </p>
-            <Alert className="mt-6 bg-accent/10 border-primary/20 text-muted-foreground">
-              <CheckCircle2 className="h-5 w-5 text-primary" />
-              <AlertTitle className="text-lg font-semibold text-foreground">Supported Formats</AlertTitle>
+            <Alert className="mt-6 bg-gray-800 border-gray-700 text-gray-300">
+              <CheckCircle2 className="h-5 w-5 text-cyan-400" />
+              <AlertTitle className="text-lg font-semibold text-white">Supported Formats</AlertTitle>
               <AlertDescription>
                 <ul className="list-disc list-inside text-base mt-2 space-y-1">
-                  <li><span className="font-medium text-foreground">VCF (Variant Call Format)</span> - Standard bioinformatics format</li>
-                  <li><span className="font-medium text-foreground">23andMe</span> - Direct-to-consumer genetic test format</li>
-                  <li><span className="font-medium text-foreground">Custom Tab-Delimited</span> - Format: rsID chromosome position genotype</li>
+                  <li><span className="font-medium text-white">VCF (Variant Call Format)</span> - Standard bioinformatics format</li>
+                  <li><span className="font-medium text-white">23andMe</span> - Direct-to-consumer genetic test format</li>
+                  <li><span className="font-medium text-white">Custom Tab-Delimited</span> - Format: rsID chromosome position genotype</li>
                 </ul>
               </AlertDescription>
             </Alert>
           </CardContent>
-        </Card>
+        </div>
       </div>
     </main>
   )
