@@ -1,6 +1,7 @@
 import type { Config } from 'tailwindcss'
 
 const config: Config = {
+  darkMode: 'class',
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -40,6 +41,9 @@ const config: Config = {
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
       },
+      boxShadow: {
+        'edge-hue': '0 0 20px 5px rgba(120, 120, 255, 0.1), 0 0 30px 10px rgba(120, 255, 120, 0.05)',
+      }
     },
   },
   plugins: [require('tailwindcss-animate')],

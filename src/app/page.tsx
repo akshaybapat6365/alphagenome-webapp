@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -10,8 +10,9 @@ import { useToast } from '@/components/ui/use-toast'
 import { SNPParser } from '@/services/snp-parser'
 import { AlphaGenomeAPI } from '@/services/alphagenome-api'
 import { InputFormat, AlphaGenomeResult } from '@/types'
-import { AlertCircle, CheckCircle2, Loader2, FileText, Dna } from 'lucide-react'
+import { AlertCircle, CheckCircle2, Loader2, FileText, Dna, Sun, Moon } from 'lucide-react'
 import { ErrorMonitor } from '@/utils/monitoring'
+import { ImplementationNotice } from '@/components/implementation-notice'
 
 const SAMPLE_DATA = {
   [InputFormat.VCF]: `##fileformat=VCFv4.2
@@ -38,7 +39,12 @@ export default function Home() {
   const [loading, setLoading] = useState(false)
   const [results, setResults] = useState<AlphaGenomeResult[]>([])
   const [parseErrors, setParseErrors] = useState<string[]>([])
+  const [theme, setTheme] = useState('dark')
   const { toast } = useToast()
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', theme === 'dark')
+  }, [theme])
 
   const handleAnalyze = async () => {
     const startTime = performance.now()
@@ -49,7 +55,6 @@ export default function Home() {
     ErrorMonitor.logEvent('analyze_started', { formatSelected: format })
 
     try {
-      // Parse SNPs
       const parseResult = SNPParser.parse(input, format)
       
       if (parseResult.errors.length > 0) {
@@ -66,7 +71,6 @@ export default function Home() {
         return
       }
 
-      // Validate SNPs
       const validationErrors = SNPParser.validateSNPs(parseResult.snps)
       if (validationErrors.length > 0) {
         setParseErrors(prev => [...prev, ...validationErrors])
@@ -77,7 +81,6 @@ export default function Home() {
         description: `Found ${parseResult.snps.length} valid SNPs. Processing...`
       })
 
-      // Analyze with AlphaGenome API
       const analysisResults = await AlphaGenomeAPI.analyzeSNPs(parseResult.snps)
       setResults(analysisResults)
 
@@ -140,31 +143,41 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
-      <div className="container mx-auto p-4 max-w-6xl">
-        <div className="flex items-center justify-center mb-8 mt-8">
-          <Dna className="w-8 h-8 mr-3 text-primary" />
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+    <main className="min-h-screen bg-background text-foreground flex flex-col items-center py-8 px-4">
+      <div className="absolute top-4 right-4">
+        <Button variant="ghost" size="icon" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+          <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+          <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+        </Button>
+      </div>
+      <div className="container mx-auto max-w-6xl space-y-10">
+        <header className="flex flex-col items-center justify-center text-center mb-12 mt-4">
+          <Dna className="w-12 h-12 mb-4 text-primary drop-shadow-lg" />
+          <h1 className="text-6xl font-extrabold soft-gradient-text tracking-tight leading-tight">
             AlphaGenome
           </h1>
-        </div>
+          <p className="text-lg text-muted-foreground mt-3 max-w-2xl">
+            Advanced AI-powered genetic analysis for personalized insights.
+          </p>
+        </header>
         
-        <div className="grid gap-6 md:grid-cols-2">
-          {/* Input Section */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Input Genetic Data</CardTitle>
-              <CardDescription>
-                Paste your SNP data in VCF, 23andMe, or custom tab-delimited format
+        <ImplementationNotice />
+        
+        <div className="grid gap-10 md:grid-cols-2">
+          <Card className="bg-card/60 backdrop-blur-md shadow-xl border border-primary/20 edge-hue p-6">
+            <CardHeader className="pb-6">
+              <CardTitle className="text-3xl font-bold soft-gradient-text mb-2">Input Genetic Data</CardTitle>
+              <CardDescription className="text-muted-foreground text-base">
+                Paste your SNP data in VCF, 23andMe, or custom tab-delimited format.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex gap-2">
+            <CardContent className="space-y-6">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <Select value={format} onValueChange={(value) => setFormat(value as InputFormat)}>
-                  <SelectTrigger className="w-[200px]">
+                  <SelectTrigger className="flex-grow h-12 text-base bg-input/30 border-primary/30 focus:ring-2 focus:ring-primary/50">
                     <SelectValue placeholder="Select format" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-card border-primary/30">
                     <SelectItem value={InputFormat.AUTO_DETECT}>Auto-detect</SelectItem>
                     <SelectItem value={InputFormat.VCF}>VCF Format</SelectItem>
                     <SelectItem value={InputFormat.TWENTY_THREE_AND_ME}>23andMe</SelectItem>
@@ -173,11 +186,12 @@ export default function Home() {
                 </Select>
                 <Button 
                   variant="outline" 
-                  size="sm"
+                  size="lg"
                   onClick={() => loadSampleData(format)}
                   disabled={format === InputFormat.AUTO_DETECT}
+                  className="h-12 text-base border-primary/30 text-primary hover:bg-primary/10"
                 >
-                  <FileText className="w-4 h-4 mr-2" />
+                  <FileText className="w-5 h-5 mr-2" />
                   Load Sample
                 </Button>
               </div>
@@ -186,15 +200,15 @@ export default function Home() {
                 placeholder="Paste your genetic data here..."
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                className="min-h-[300px] font-mono text-sm"
+                className="min-h-[350px] font-mono text-sm bg-input/30 border-primary/30 focus:ring-2 focus:ring-primary/50 p-4 rounded-lg"
               />
 
               {parseErrors.length > 0 && (
-                <Alert variant="destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>Parsing Errors</AlertTitle>
+                <Alert variant="destructive" className="bg-destructive/20 border-destructive/50 text-destructive-foreground">
+                  <AlertCircle className="h-5 w-5" />
+                  <AlertTitle className="text-lg">Parsing Errors</AlertTitle>
                   <AlertDescription>
-                    <ul className="list-disc list-inside text-sm mt-2">
+                    <ul className="list-disc list-inside text-sm mt-2 space-y-1">
                       {parseErrors.slice(0, 5).map((error, idx) => (
                         <li key={idx}>{error}</li>
                       ))}
@@ -209,11 +223,11 @@ export default function Home() {
               <Button 
                 onClick={handleAnalyze} 
                 disabled={loading || !input.trim()}
-                className="w-full"
+                className="w-full h-14 text-lg font-semibold bg-primary hover:bg-primary/90 transition-all duration-300 transform hover:-translate-y-0.5 shadow-lg hover:shadow-primary/30"
               >
                 {loading ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="mr-3 h-5 w-5 animate-spin" />
                     Analyzing...
                   </>
                 ) : (
@@ -223,66 +237,65 @@ export default function Home() {
             </CardContent>
           </Card>
 
-          {/* Results Section */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Analysis Results</CardTitle>
-              <CardDescription>
-                AlphaGenome predictions for your genetic variants
+          <Card className="bg-card/60 backdrop-blur-md shadow-xl border border-primary/20 edge-hue p-6">
+            <CardHeader className="pb-6">
+              <CardTitle className="text-3xl font-bold soft-gradient-text mb-2">Analysis Results</CardTitle>
+              <CardDescription className="text-muted-foreground text-base">
+                AlphaGenome predictions for your genetic variants.
               </CardDescription>
             </CardHeader>
             <CardContent>
               {results.length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground">
-                  <Dna className="w-12 h-12 mx-auto mb-4 opacity-20" />
-                  <p>No results yet. Upload and analyze your genetic data to see predictions.</p>
+                <div className="text-center py-20 text-muted-foreground opacity-70">
+                  <Dna className="w-16 h-16 mx-auto mb-6 opacity-20" />
+                  <p className="text-lg">No results yet. Upload and analyze your genetic data to see predictions.</p>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center mb-4">
-                    <p className="text-sm text-muted-foreground">
-                      Analyzed {results.length} variants
+                <div className="space-y-6">
+                  <div className="flex justify-between items-center pb-4 border-b border-primary/20">
+                    <p className="text-base text-muted-foreground font-medium">
+                      Analyzed <span className="text-primary font-semibold">{results.length}</span> variants
                     </p>
-                    <Button size="sm" variant="outline" onClick={exportResults}>
+                    <Button size="lg" variant="outline" onClick={exportResults} className="h-12 text-base border-primary/30 text-primary hover:bg-primary/10">
                       Export CSV
                     </Button>
                   </div>
                   
-                  <div className="max-h-[400px] overflow-y-auto space-y-2">
+                  <div className="max-h-[450px] overflow-y-auto space-y-4 pr-2 custom-scrollbar">
                     {results.map((result, idx) => (
-                      <div key={idx} className="border rounded-lg p-3 hover:bg-accent/50 transition-colors">
+                      <div key={idx} className="border border-primary/20 rounded-xl p-4 bg-accent/10 hover:bg-accent/20 transition-all duration-200 shadow-sm hover:shadow-md">
                         <div className="flex justify-between items-start">
                           <div>
-                            <p className="font-semibold text-sm">{result.rsId}</p>
-                            <p className="text-xs text-muted-foreground">
+                            <p className="font-semibold text-lg text-foreground">{result.rsId}</p>
+                            <p className="text-sm text-muted-foreground mt-1">
                               Chr{result.chromosome}:{result.position} - {result.genotype}
                             </p>
                           </div>
                           {result.error ? (
-                            <div className="text-destructive text-xs">
-                              <AlertCircle className="w-4 h-4" />
+                            <div className="text-destructive text-sm flex items-center">
+                              <AlertCircle className="w-5 h-5 mr-1" /> Error
                             </div>
                           ) : result.predictions && (
                             <div className="text-right">
-                              <div className={`text-xs font-medium ${
+                              <div className={`text-base font-bold ${
                                 (result.predictions.pathogenicity || 0) > 0.7 
-                                  ? 'text-destructive' 
+                                  ? 'text-red-400' 
                                   : (result.predictions.pathogenicity || 0) > 0.3 
-                                  ? 'text-yellow-600' 
-                                  : 'text-green-600'
+                                  ? 'text-yellow-400' 
+                                  : 'text-green-400'
                               }`}>
                                 {result.predictions.pathogenicity !== undefined 
                                   ? `Risk: ${(result.predictions.pathogenicity * 100).toFixed(0)}%`
                                   : 'Unknown'}
                               </div>
-                              <p className="text-xs text-muted-foreground">
+                              <p className="text-sm text-muted-foreground mt-1">
                                 {result.predictions.effect || 'No effect data'}
                               </p>
                             </div>
                           )}
                         </div>
                         {result.error && (
-                          <p className="text-xs text-destructive mt-1">{result.error}</p>
+                          <p className="text-sm text-destructive mt-2">{result.error}</p>
                         )}
                       </div>
                     ))}
@@ -293,25 +306,24 @@ export default function Home() {
           </Card>
         </div>
 
-        {/* Info Section */}
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle>About AlphaGenome</CardTitle>
+        <Card className="mt-10 bg-card/60 backdrop-blur-md shadow-xl border border-primary/20 edge-hue p-6">
+          <CardHeader className="pb-6">
+            <CardTitle className="text-3xl font-bold soft-gradient-text mb-2">About AlphaGenome</CardTitle>
           </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
+          <CardContent className="space-y-4">
+            <p className="text-base text-muted-foreground leading-relaxed">
               AlphaGenome uses advanced AI to analyze genetic variants and predict their potential effects. 
               This tool supports multiple input formats including VCF, 23andMe, and custom tab-delimited files. 
               Results include pathogenicity predictions, functional effects, and confidence scores.
             </p>
-            <Alert className="mt-4">
-              <CheckCircle2 className="h-4 w-4" />
-              <AlertTitle>Supported Formats</AlertTitle>
+            <Alert className="mt-6 bg-accent/10 border-primary/20 text-muted-foreground">
+              <CheckCircle2 className="h-5 w-5 text-primary" />
+              <AlertTitle className="text-lg font-semibold text-foreground">Supported Formats</AlertTitle>
               <AlertDescription>
-                <ul className="list-disc list-inside text-sm mt-2">
-                  <li>VCF (Variant Call Format) - Standard bioinformatics format</li>
-                  <li>23andMe - Direct-to-consumer genetic test format</li>
-                  <li>Custom Tab-Delimited - Format: rsID chromosome position genotype</li>
+                <ul className="list-disc list-inside text-base mt-2 space-y-1">
+                  <li><span className="font-medium text-foreground">VCF (Variant Call Format)</span> - Standard bioinformatics format</li>
+                  <li><span className="font-medium text-foreground">23andMe</span> - Direct-to-consumer genetic test format</li>
+                  <li><span className="font-medium text-foreground">Custom Tab-Delimited</span> - Format: rsID chromosome position genotype</li>
                 </ul>
               </AlertDescription>
             </Alert>
